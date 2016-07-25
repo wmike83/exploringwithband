@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExploringWithBand.UWP.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,19 @@ namespace ExploringWithBand.UWP
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        private async void btnGet_Click(object sender, RoutedEventArgs e)
+        {
+            var data = await GeolocatorService.Instance.GetCurrentLocationAsync();
+
+            if(data == null)
+            {
+                // failure with GPS
+                return;
+            }
+
+            tblLocation.Text = data.Coordinate.Point.Position.Longitude + ", " + data.Coordinate.Point.Position.Latitude;
         }
     }
 }
