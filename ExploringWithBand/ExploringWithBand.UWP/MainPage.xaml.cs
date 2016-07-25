@@ -38,7 +38,8 @@ namespace ExploringWithBand.UWP
                 return;
             }
 
-            tblLocation.Text = data.Coordinate.Point.Position.Longitude + ", " + data.Coordinate.Point.Position.Latitude;
+            FourSquareService s = new FourSquareService();
+            var d = await s.FetchVenuesAsync(data.Coordinate.Point.Position.Latitude, data.Coordinate.Point.Position.Longitude);
         }
     }
 }

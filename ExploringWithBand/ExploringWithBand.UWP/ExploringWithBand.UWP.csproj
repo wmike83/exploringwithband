@@ -99,6 +99,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\FourSquareService.cs" />
     <Compile Include="Services\GeolocatorService.cs" />
   </ItemGroup>
   <ItemGroup>
