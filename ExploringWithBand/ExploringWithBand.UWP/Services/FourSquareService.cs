@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Json;
+using ExploringWithBand.UWP.FourSquare;
 
 namespace ExploringWithBand.UWP.Services
 {
@@ -41,22 +42,25 @@ namespace ExploringWithBand.UWP.Services
             baseAddress = uri.ToString();
         }
 
-        public async Task<string> FetchVenuesAsync(double lat, double lon, IList<string> CategoryFilter = null)
+        public async Task<List<Venue>> FetchVenuesAsync(double lat, double lon, IList<string> CategoryFilter = null)
         {
             var response = await client.GetAsync(baseAddress + "&ll=" + lat + "," + lon);
             var content = await response.Content.ReadAsStringAsync();
             var json = JObject.Parse(content);
             var vens = json["response"]["venues"].ToList();
 
-            var lis = vens.Select(v => new
+            // Select all venues which have an intersection with the CategoryFilter
+            if (CategoryFilter != null)
             {
-                Name = v["name"].ToString(),
-                Latitude = v["location"]["lat"].ToString(),
-                Longitude = v["location"]["lng"].ToString(),
-                Distance = v["location"]["distance"].ToString(),
-                Category = v["categories"].ToList().Select(c => c["name"].ToString()).ToList(),
-            }).ToList();
-            return "";
+                var lis = vens.Where(v => v["categories"].ToList().Select(c => c["name"].ToString()).Intersect(CategoryFilter).Any())
+                              .Select(v => new Venue(v)).ToList();
+                return lis;
+            } else
+            {
+                // no filter present, return all items
+                var lis = vens.Select(v => new Venue(v)).ToList();
+                return lis;
+            }
         }
     }
 }
