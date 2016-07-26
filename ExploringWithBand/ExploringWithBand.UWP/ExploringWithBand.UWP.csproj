@@ -108,6 +108,8 @@
     <None Include="ExploringWithBand.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Collapse.png" />
+    <Content Include="Assets\Expand.png" />
     <Content Include="FourSquare\DevInfo.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

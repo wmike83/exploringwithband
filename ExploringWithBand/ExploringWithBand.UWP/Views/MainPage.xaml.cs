@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -37,8 +38,18 @@ namespace ExploringWithBand.UWP.Views
                 // failure with GPS
                 return;
             }
+        }
 
-            tblLocation.Text = data.Coordinate.Point.Position.Longitude + ", " + data.Coordinate.Point.Position.Latitude;
+
+        private void Image_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var img = sender as Image;
+            var parentGrid = img.Parent as Grid;
+            foreach(var child in parentGrid.Children)
+            {
+                var name = 0;
+            }
+            img.Source = new BitmapImage(new Uri("ms-appx:///Assets/Collapse.png"));
         }
     }
 }

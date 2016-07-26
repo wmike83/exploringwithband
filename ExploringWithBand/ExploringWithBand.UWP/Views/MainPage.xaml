@@ -7,12 +7,100 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <Style x:Key="HubHeaderTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="7,10,7,0" />
+        </Style>
+        <Style x:Key="HubSubheaderTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="Margin" Value="7,0,7,0" />
+        </Style>
+        <Style x:Key="HubBodyTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="7,0,7,10" />
+        </Style>
+        <Style x:Key="HubDescriptionTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="15,0,15,10" />
+        </Style>
+    </Page.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
-            <Button x:Name="btnGet"
-                    Content="Get"
-                    Click="btnGet_Click" />
-            <TextBlock x:Name="tblLocation" />
+            <Grid BorderBrush="{StaticResource ThumbPressedBorderThemeBrush}"
+                  BorderThickness="2"
+                  Margin="7,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Background="Aqua"
+                      Width="80"
+                      Height="80"
+                      Grid.Column="0"
+                      Grid.Row="0"
+                      Grid.RowSpan="3"
+                      Margin="7" />
+
+                <TextBlock Style="{StaticResource HubHeaderTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="0"
+                           Text="Chihuly Garden" />
+
+                <TextBlock Style="{StaticResource HubSubheaderTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="1"
+                           Text="Museam" />
+
+                <TextBlock Style="{StaticResource HubBodyTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="2"
+                           Text="0.2 mi" />
+
+                <TextBlock Style="{StaticResource HubDescriptionTextBlock}"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           Grid.Row="3"
+                           TextWrapping="Wrap"
+                           Text="lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds lks jflkdsj flkds jlk fdsl fjlkds jflk jd slkjflkds jlkf dslkj flkds jlkfj lkds jfds "/>
+
+                <TextBlock Style="{StaticResource HubHeaderTextBlock}"
+                           Grid.Column="2"
+                           Grid.Row="0"
+                           Text="9.5" />
+
+                <TextBlock Text="Directions"
+                           Grid.Column="1"
+                           Grid.Row="4"
+                           HorizontalAlignment="Center" />
+
+                <Image Source="/Assets/Expand.png"
+                       Height="40"
+                       Grid.Column="2"
+                       Grid.Row="4"
+                       Margin="0,0,0,-10"
+                       Tapped="Image_Tapped" />
+            </Grid>
+
+
+            
+            
+            
+
         </StackPanel>
     </Grid>
 </Page>
