@@ -23,9 +23,9 @@ namespace ExploringWithBand.UWP.Views
             categories.Add("Drinks", new List<string>() { "4d4b7105d754a06376d81259" });
             categories.Add("Coffee", new List<string>() { "4bf58dd8d48988d16d941735", "4bf58dd8d48988d1e0931735" });
             categories.Add("Shops", new List<string>() { "4d4b7105d754a06378d81259" });
-            categories.Add("Arts", new List<string>() { "4d4b7104d754a06370d81259" });
+            categories.Add("Arts", new List<string>() { "4bf58dd8d48988d181941735", "507c8c4091d498d9fc8c67a9", "4bf58dd8d48988d1e2931735", "56aa371be4b08b9a8d573532" });
             categories.Add("Outdoors", new List<string>() { "4d4b7105d754a06377d81259" });
-            categories.Add("Sights", new List<string>() { "4bf58dd8d48988d12d941735" });
+            categories.Add("Sights", new List<string>() { "4bf58dd8d48988d12d941735", "5642206c498e4bfca532186c", "4deefb944765f83613cdba6e" });
 
             Loaded += SettingsPage_Loaded;
         }
