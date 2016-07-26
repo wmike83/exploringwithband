@@ -8,7 +8,7 @@ namespace ExploringWithBand.UWP.FourSquare
 {
     public class Venue
     {
-        private string _venueName, _lat, _lon, _dist;
+        private string _venueName, _lat, _lon, _dist, _shortDescription, _longDescription;
         private List<string> _categories;
         public Venue(Newtonsoft.Json.Linq.JToken v)
         {
@@ -17,6 +17,7 @@ namespace ExploringWithBand.UWP.FourSquare
             _lon = v["location"]["lng"].ToString();
             _dist = v["location"]["distance"].ToString();
             _categories = v["categories"].ToList().Select(c => c["name"].ToString()).ToList();
+            _shortDescription = v["tips"].ToList().ToString();
         }
         public string Name {
             get { return _venueName; }

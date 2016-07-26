@@ -50,6 +50,7 @@ namespace ExploringWithBand.UWP.Services
             var vens = json["response"]["venues"].ToList();
 
             // Select all venues which have an intersection with the CategoryFilter
+            // TODO: not sure if we should filter here, or if we can filter in the API call itself?
             if (CategoryFilter != null)
             {
                 var lis = vens.Where(v => v["categories"].ToList().Select(c => c["name"].ToString()).Intersect(CategoryFilter).Any())
