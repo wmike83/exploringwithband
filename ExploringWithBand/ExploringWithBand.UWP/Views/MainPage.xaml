@@ -1,0 +1,175 @@
+﻿<Page
+    x:Class="ExploringWithBand.UWP.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ExploringWithBand.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style x:Key="HubTitleTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontWeight" Value="ExtraBold" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="HubHeaderTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="0,7,7,-30" />
+        </Style>
+        <Style x:Key="HubSubheaderTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="Margin" Value="0,0,7,0" />
+        </Style>
+        <Style x:Key="HubBodyTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,7,0" />
+        </Style>
+        <Style x:Key="HubDescriptionTextBlock"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="15,0,15,10" />
+        </Style>
+
+        <DataTemplate x:Key="HubTemplate">
+            <Grid BorderBrush="{StaticResource ThumbPressedBorderThemeBrush}"
+                  BorderThickness="2"
+                  Background="AliceBlue"
+                  Margin="-7,4,-20,4"
+                  Width="{Binding ActualWidth, ElementName=lstHub}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Background="Aqua"
+                      Width="80"
+                      Height="80"
+                      Grid.Column="0"
+                      Grid.Row="0"
+                      Grid.RowSpan="3"
+                      Margin="7" />
+
+                <TextBlock Style="{StaticResource HubHeaderTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="0"
+                           Text="{Binding Name}" />
+
+                <TextBlock Style="{StaticResource HubSubheaderTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="1"
+                           Text="{Binding CategoryName}" />
+
+                <TextBlock Style="{StaticResource HubBodyTextBlock}"
+                           Grid.Column="1"
+                           Grid.Row="2"
+                           Text="{Binding DistanceInMiles}" />
+
+                <Grid Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Grid.Row="0"
+                      Grid.RowSpan="3"
+                      Background="Transparent"
+                      Tapped="Grid_Tapped"
+                      Tag="{Binding Id}" />
+
+                <Grid x:Name="Details"
+                       Grid.Row="3"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="3"
+                       Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Style="{StaticResource HubDescriptionTextBlock}"
+                               Grid.Row="0"
+                               TextWrapping="Wrap"
+                               Text="{Binding Description}"/>
+
+                    <TextBlock Style="{StaticResource HubDescriptionTextBlock}"
+                               Text="Directions"
+                               Grid.Row="1"
+                               HorizontalAlignment="Center" />
+                </Grid>
+
+                <TextBlock Style="{StaticResource HubHeaderTextBlock}"
+                           Grid.Column="2"
+                           Grid.Row="0"
+                           Text="{Binding Rating}" />
+
+                <Image Source="/Assets/Expand.png"
+                       Height="40"
+                       Margin="0,0,-2,-5"
+                       Grid.ColumnSpan="3"
+                       Grid.RowSpan="4"
+                       VerticalAlignment="Bottom"
+                       HorizontalAlignment="Right"
+                       Tapped="Image_Tapped" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid x:Name="grid"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Grid Background="LightGray">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Background="RoyalBlue">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ToggleButton x:Name="BurgerToggle"
+                              IsChecked="False">
+                    <Image Source="/Assets/ham@3x.png" />
+                </ToggleButton>
+                <TextBlock Text="Explorer"
+                           Style="{StaticResource HubTitleTextBlock}"
+                           Grid.Column="1"/>
+            </Grid>
+
+            <SplitView Grid.Row="1"
+                       PanePlacement="Left"
+                       CompactPaneLength="50"
+                       OpenPaneLength="50"
+                       IsPaneOpen="{Binding IsChecked,
+                                            ElementName=BurgerToggle}"
+                       PaneBackground="RoyalBlue"
+                       DisplayMode="Inline">
+                <SplitView.Pane>
+                    <RelativePanel>
+                        <StackPanel>
+                            <Image Source="/Assets/add.png" Tapped="Image_Tapped_1" />
+                            <Image Source="/Assets/feature.settings.png" Tapped="Image_Tapped_2" />
+                        </StackPanel>
+                    </RelativePanel>
+                </SplitView.Pane>
+
+                <ListView x:Name="lstHub"
+                          SelectionMode="None"
+                          ItemTemplate="{StaticResource HubTemplate}"
+                          ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+
+            </SplitView>
+        </Grid>
+
+
+    </Grid>
+</Page>
