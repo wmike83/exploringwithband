@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExploringWithBand.UWP.FourSquare
 {
@@ -17,7 +14,6 @@ namespace ExploringWithBand.UWP.FourSquare
             _lon = v["location"]["lng"].ToString();
             _dist = v["location"]["distance"].ToString();
             _categories = v["categories"].ToList().Select(c => c["name"].ToString()).ToList();
-            _shortDescription = v["tips"].ToList().ToString();
         }
         public string Name {
             get { return _venueName; }

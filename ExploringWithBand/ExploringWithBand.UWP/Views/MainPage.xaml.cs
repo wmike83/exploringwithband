@@ -1,19 +1,12 @@
 ﻿using ExploringWithBand.UWP.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -31,9 +24,23 @@ namespace ExploringWithBand.UWP.Views
             Loaded += MainPage_Loaded;
         }
 
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            lstHub.ItemsSource = LoadDummyData();
+            lstHub.ItemsSource = await LoadDataAsync();
+        }
+
+        private async Task<IList<HubType>> LoadDataAsync()
+        {
+            var position = await GeolocatorService.Instance.GetCurrentLocationAsync();
+
+            var listOfSelectedCategories = (App.Current as App).SelectedCategories.SelectMany(kvp => kvp.Value).ToList();
+
+            FourSquareService fs = new FourSquareService();
+            var venues = await fs.FetchVenuesAsync(position.Coordinate.Point.Position.Latitude, position.Coordinate.Point.Position.Longitude, listOfSelectedCategories.Count > 0 ? listOfSelectedCategories : null);
+
+            var li = venues.Select(v => new HubType() { Id = v.Name, Name = v.Name, CategoryName = v.Categories.First(), DistanceInMiles = v.Distance, Rating = "::", Description = "??" }).ToList();
+
+            return li;
         }
 
         private IList<HubType> LoadDummyData()
