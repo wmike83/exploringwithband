@@ -34,5 +34,19 @@ namespace ExploringWithBand.UWP.FourSquare
         {
             get { return _categories; }
         }
+        public string Category
+        {
+            get {
+                if (_categories.Count > 0)
+                {
+                    return _categories[0];
+                }
+                else
+                {
+                    return "Place";
+                }
+                   
+            }
+        }
     }
 }

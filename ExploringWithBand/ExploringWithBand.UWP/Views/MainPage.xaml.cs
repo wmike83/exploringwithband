@@ -13,6 +13,7 @@ using Windows.Devices.Geolocation.Geofencing;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Band;
 using Microsoft.Band.Tiles;
+using Windows.UI.Core;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -24,6 +25,7 @@ namespace ExploringWithBand.UWP.Views
     public sealed partial class MainPage : Page
     {
         private bool isGeofenceUp = false;
+        private const string CURRENT_GEOFENCE_ID = "__current";
 
         public MainPage()
         {
@@ -93,13 +95,45 @@ namespace ExploringWithBand.UWP.Views
         }
         #endregion
 
-        private void SetupGeofences(List<Venue> venues)
+        private void SetupGeofences(List<Venue> venues, Geoposition position)
         {
             var geofences = GeofenceMonitor.Current.Geofences;
 
-            isGeofenceUp = true;
-            GeofenceMonitor.Current.GeofenceStateChanged += OnGeofenceStateChanged;
-            GeofenceMonitor.Current.StatusChanged += OnGeofenceStatusChanged;
+            if (!isGeofenceUp)
+            {
+                isGeofenceUp = true;
+                GeofenceMonitor.Current.GeofenceStateChanged += OnGeofenceStateChanged;
+                GeofenceMonitor.Current.StatusChanged += OnGeofenceStatusChanged;
+            }
+            
+            CreateAllGeofences(venues, position);
+        }
+
+        private void CreateAllGeofences(List<Venue> venues, Geoposition currentPos)
+        {
+            int i = 0;
+            foreach (Venue v in venues)
+            {
+                var position = new BasicGeoposition();
+                position.Latitude = Double.Parse(v.Latitude);
+                position.Longitude = Double.Parse(v.Longitude);
+                var geocircle = new Geocircle(position, 50);
+                var geofence = new Geofence("geo" + i, geocircle);
+                i++;
+            }
+
+            // create geofence from current position
+            var basicCurrentPos = new BasicGeoposition();
+            basicCurrentPos.Latitude = currentPos.Coordinate.Point.Position.Latitude;
+            basicCurrentPos.Longitude = currentPos.Coordinate.Point.Position.Longitude;
+            new Geofence(CURRENT_GEOFENCE_ID, new Geocircle(basicCurrentPos, 250));
+
+        }
+
+        private void TearDownGeofences()
+        {
+            // should work if it implements the interface?
+            GeofenceMonitor.Current.Geofences.Clear();
         }
 
         #region Geofence events
@@ -108,14 +142,47 @@ namespace ExploringWithBand.UWP.Views
             // ToDo: Don't know yet
         }
 
-        private void OnGeofenceStateChanged(GeofenceMonitor sender, object args)
+        private async void OnGeofenceStateChanged(GeofenceMonitor sender, object args)
         {
-            // ToDo: Send notification to band
+            var reports = sender.ReadReports();
+
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                foreach (GeofenceStateChangeReport report in reports)
+                {
+                    GeofenceState state = report.NewState;
+
+                    Geofence geofence = report.Geofence;
+
+                    if (state == GeofenceState.Removed)
+                    {
+                        // Remove the geofence from the geofences collection.
+                        GeofenceMonitor.Current.Geofences.Remove(geofence);
+                    }
+                    else if (state == GeofenceState.Entered)
+                    {
+
+                    }
+                    else if (state == GeofenceState.Exited)
+                    {
+                        if (geofence.Id == CURRENT_GEOFENCE_ID)
+                        {
+                            TearDownGeofences();
+                            RefreshData();
+                        }
+                        else
+                        {
+                            // TODO send notification to Band
+                        }
+                    }
+                }
+            });
+
         }
         #endregion
 
         #region Load Data
-        private async Task<IList<HubType>> LoadDataAsync()
+        private async Task<List<Venue>> LoadDataAsync()
         {
             var position = await GeolocatorService.Instance.GetCurrentLocationAsync();
 
@@ -124,11 +191,9 @@ namespace ExploringWithBand.UWP.Views
             FourSquareService fs = new FourSquareService();
             var venues = await fs.FetchVenuesAsync(position.Coordinate.Point.Position.Latitude, position.Coordinate.Point.Position.Longitude, listOfSelectedCategories.Count > 0 ? listOfSelectedCategories : null);
 
-            SetupGeofences(venues);
+            SetupGeofences(venues, position);
 
-            var li = venues.Select(v => new HubType() { Id = v.Name, Name = v.Name, CategoryName = v.Categories.First(), DistanceInMiles = v.Distance, Rating = "::", Description = "??" }).ToList();
-
-            return li;
+            return venues;
         }
 
         private IList<HubType> LoadDummyData()

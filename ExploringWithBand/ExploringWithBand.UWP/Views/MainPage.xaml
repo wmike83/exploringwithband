@@ -69,12 +69,12 @@
                 <TextBlock Style="{StaticResource HubSubheaderTextBlock}"
                            Grid.Column="1"
                            Grid.Row="1"
-                           Text="{Binding CategoryName}" />
+                           Text="{Binding Category}" />
 
                 <TextBlock Style="{StaticResource HubBodyTextBlock}"
                            Grid.Column="1"
                            Grid.Row="2"
-                           Text="{Binding DistanceInMiles}" />
+                           Text="{Binding Distance}" />
 
                 <Grid Grid.Column="0"
                       Grid.ColumnSpan="2"
@@ -82,7 +82,7 @@
                       Grid.RowSpan="3"
                       Background="Transparent"
                       Tapped="Grid_Tapped"
-                      Tag="{Binding Id}" />
+                      Tag="{Binding Name}" />
 
                 <Grid x:Name="Details"
                        Grid.Row="3"
@@ -97,7 +97,7 @@
                     <TextBlock Style="{StaticResource HubDescriptionTextBlock}"
                                Grid.Row="0"
                                TextWrapping="Wrap"
-                               Text="{Binding Description}"/>
+                               Text="{Binding Category}"/>
 
                     <TextBlock Style="{StaticResource HubDescriptionTextBlock}"
                                Text="Directions"
@@ -108,7 +108,7 @@
                 <TextBlock Style="{StaticResource HubHeaderTextBlock}"
                            Grid.Column="2"
                            Grid.Row="0"
-                           Text="{Binding Rating}" />
+                           Text="" />
 
                 <Image Source="/Assets/Expand.png"
                        Height="40"
