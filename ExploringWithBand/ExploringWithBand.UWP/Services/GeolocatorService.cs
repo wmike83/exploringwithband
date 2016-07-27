@@ -23,6 +23,8 @@ namespace ExploringWithBand.UWP.Services
         private GeolocationAccessStatus accessStatus = GeolocationAccessStatus.Unspecified;
         private TimeSpan refreshTime = new TimeSpan(0, 5, 0); // 5 minutes
 
+        public Action<Geoposition> OnPositionChanged { get; set; }
+
         private async Task Init()
         {
             // Ask user for access to GPS
@@ -31,7 +33,7 @@ namespace ExploringWithBand.UWP.Services
             // If allowed then initialize geolocator
             if(accessStatus == GeolocationAccessStatus.Allowed)
             {
-                locator = new Geolocator() { DesiredAccuracyInMeters = 5 };
+                locator = new Geolocator() { DesiredAccuracyInMeters = 5, MovementThreshold = 500 };
             }
         }
 
@@ -48,12 +50,19 @@ namespace ExploringWithBand.UWP.Services
                 if (lastPosition == null || (DateTime.Now - lastPosition.Coordinate.Timestamp) > refreshTime)
                 {
                     lastPosition = await locator.GetGeopositionAsync();
+                    locator.PositionChanged += Locator_PositionChanged;
                 }
 
                 return lastPosition;
             }
 
             return null;
+        }
+
+        private void Locator_PositionChanged(Geolocator sender, PositionChangedEventArgs args)
+        {
+            lastPosition = args.Position;
+            OnPositionChanged?.Invoke(args.Position);
         }
     }
 }

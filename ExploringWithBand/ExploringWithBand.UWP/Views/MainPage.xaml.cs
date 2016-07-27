@@ -7,6 +7,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.Devices.Geolocation;
+using ExploringWithBand.UWP.FourSquare;
+using Windows.Devices.Geolocation.Geofencing;
+using Windows.UI.Xaml.Navigation;
+using Microsoft.Band;
+using Microsoft.Band.Tiles;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -17,6 +23,8 @@ namespace ExploringWithBand.UWP.Views
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private bool isGeofenceUp = false;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -24,11 +32,89 @@ namespace ExploringWithBand.UWP.Views
             Loaded += MainPage_Loaded;
         }
 
-        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            lstHub.ItemsSource = await LoadDataAsync();
+            ConnectToBand();
+
+            GeolocatorService.Instance.OnPositionChanged += OnPositionChanged;
+
+            RefreshData();
         }
 
+        private async void ConnectToBand()
+        {
+            //IBandInfo[] pairedBands = await BandClientManager.Instance.GetBandsAsync();
+
+            //try
+            //{
+            //    using (IBandClient bandClient = await BandClientManager.Instance.ConnectAsync(pairedBands[0]))
+            //    {
+            //        // do work after successful connect
+            //        try
+            //        {     // get the current set of tiles
+            //            IEnumerable<BandTile> tiles = await bandClient.TileManager.GetTilesAsync();
+            //            try
+            //            {
+            //                // determine the number of available tile slots on the Band
+            //                int tileCapacity = await bandClient.TileManager.GetRemainingTileCapacityAsync();
+
+            //            }
+            //            catch (BandException ex)
+            //            {
+            //                // handle a Band connection exception
+            //            }
+            //        }
+            //        catch (BandException ex)
+            //        {
+            //            // handle a Band connection exception
+            //        }
+            //    }
+            //}
+            //catch (BandException ex)
+            //{
+            //    // handle a Band connection exception
+            //}
+        }
+
+        private async void RefreshData()
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High,
+                async () =>
+                {
+                    var data = await LoadDataAsync();
+                    lstHub.ItemsSource = data;
+                });
+        }
+
+        #region GPS Position Event
+        private void OnPositionChanged(Geoposition obj)
+        {
+            RefreshData();
+        }
+        #endregion
+
+        private void SetupGeofences(List<Venue> venues)
+        {
+            var geofences = GeofenceMonitor.Current.Geofences;
+
+            isGeofenceUp = true;
+            GeofenceMonitor.Current.GeofenceStateChanged += OnGeofenceStateChanged;
+            GeofenceMonitor.Current.StatusChanged += OnGeofenceStatusChanged;
+        }
+
+        #region Geofence events
+        private void OnGeofenceStatusChanged(GeofenceMonitor sender, object args)
+        {
+            // ToDo: Don't know yet
+        }
+
+        private void OnGeofenceStateChanged(GeofenceMonitor sender, object args)
+        {
+            // ToDo: Send notification to band
+        }
+        #endregion
+
+        #region Load Data
         private async Task<IList<HubType>> LoadDataAsync()
         {
             var position = await GeolocatorService.Instance.GetCurrentLocationAsync();
@@ -37,6 +123,8 @@ namespace ExploringWithBand.UWP.Views
 
             FourSquareService fs = new FourSquareService();
             var venues = await fs.FetchVenuesAsync(position.Coordinate.Point.Position.Latitude, position.Coordinate.Point.Position.Longitude, listOfSelectedCategories.Count > 0 ? listOfSelectedCategories : null);
+
+            SetupGeofences(venues);
 
             var li = venues.Select(v => new HubType() { Id = v.Name, Name = v.Name, CategoryName = v.Categories.First(), DistanceInMiles = v.Distance, Rating = "::", Description = "??" }).ToList();
 
@@ -63,7 +151,9 @@ namespace ExploringWithBand.UWP.Views
 
             return dummyList;
         }
+        #endregion
 
+        #region Expand/Collapse logic and event
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var img = sender as Image;
@@ -83,6 +173,7 @@ namespace ExploringWithBand.UWP.Views
                 img.Source = new BitmapImage(new Uri("ms-appx:///Assets/Expand.png"));
             }
         }
+        #endregion
 
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -92,6 +183,7 @@ namespace ExploringWithBand.UWP.Views
             // ToDo: What ever we want to do here
         }
 
+        #region Menu Events
         private void Image_Tapped_1(object sender, TappedRoutedEventArgs e)
         {
             BurgerToggle.IsChecked = false;
@@ -101,6 +193,23 @@ namespace ExploringWithBand.UWP.Views
         {
             Frame.Navigate(typeof(SettingsPage));
         }
+        #endregion
+
+        #region Navigation Overrides
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+
+            GeolocatorService.Instance.OnPositionChanged -= OnPositionChanged;
+
+            if (isGeofenceUp)
+            {
+                isGeofenceUp = false;
+                GeofenceMonitor.Current.GeofenceStateChanged -= OnGeofenceStateChanged;
+                GeofenceMonitor.Current.StatusChanged -= OnGeofenceStatusChanged;
+            }
+        }
+        #endregion
     }
 
     public class HubType
