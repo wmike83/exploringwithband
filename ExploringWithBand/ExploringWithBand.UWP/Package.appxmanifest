@@ -27,10 +27,11 @@
     <DeviceCapability Name="location" />
     <DeviceCapability Name="proximity" />
     <DeviceCapability Name="bluetooth.rfcomm">
-      <Device Id="any">
-        <Function Type="serviceId:A502CA9A-2BA5-413C-A4E0-13804E47B38F" />
-        <Function Type="serviceId:C742E1A2-6320-5ABC-9643-D206C677E580" />
+         <Device Id="any">
+              <Function Type="serviceId:A502CA9A-2BA5-413C-A4E0-13804E47B38F" />
+              <Function Type="serviceId:C742E1A2-6320-5ABC-9643-D206C677E580" />
       </Device>
     </DeviceCapability>
+
   </Capabilities>
 </Package>

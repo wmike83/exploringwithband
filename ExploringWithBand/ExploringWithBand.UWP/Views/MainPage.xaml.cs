@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Navigation;
 using Microsoft.Band;
 using Microsoft.Band.Tiles;
 using Windows.UI.Core;
+using Microsoft.Band.Tiles.Pages;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,6 +27,8 @@ namespace ExploringWithBand.UWP.Views
     {
         private bool isGeofenceUp = false;
         private const string CURRENT_GEOFENCE_ID = "__current";
+        private Guid tileGuid = Guid.Empty;
+        private IBandClient bandClient = null;
 
         public MainPage()
         {
@@ -38,45 +41,195 @@ namespace ExploringWithBand.UWP.Views
         {
             ConnectToBand();
 
-            GeolocatorService.Instance.OnPositionChanged += OnPositionChanged;
+            //GeolocatorService.Instance.OnPositionChanged += OnPositionChanged;
 
-            RefreshData();
+            //RefreshData();
         }
 
         private async void ConnectToBand()
         {
-            //IBandInfo[] pairedBands = await BandClientManager.Instance.GetBandsAsync();
+            IBandInfo[] pairedBands = await BandClientManager.Instance.GetBandsAsync();
 
-            //try
-            //{
-            //    using (IBandClient bandClient = await BandClientManager.Instance.ConnectAsync(pairedBands[0]))
-            //    {
-            //        // do work after successful connect
-            //        try
-            //        {     // get the current set of tiles
-            //            IEnumerable<BandTile> tiles = await bandClient.TileManager.GetTilesAsync();
-            //            try
-            //            {
-            //                // determine the number of available tile slots on the Band
-            //                int tileCapacity = await bandClient.TileManager.GetRemainingTileCapacityAsync();
+            try
+            {
+                if (pairedBands.Length > 0)
+                {
+                    bandClient = await BandClientManager.Instance.ConnectAsync(pairedBands[0]);
 
-            //            }
-            //            catch (BandException ex)
-            //            {
-            //                // handle a Band connection exception
-            //            }
-            //        }
-            //        catch (BandException ex)
-            //        {
-            //            // handle a Band connection exception
-            //        }
-            //    }
-            //}
-            //catch (BandException ex)
-            //{
-            //    // handle a Band connection exception
-            //}
+                    // do work after successful connect
+                    try
+                    {
+                        try
+                        {
+                            await CreateTilePage();
+                        }
+                        catch (BandException ex)
+                        {
+                            // handle a Band connection exception
+                        }
+                    }
+                    catch (BandException ex)
+                    {
+                        // handle a Band connection exception
+                    }
+
+                }
+            }
+            catch (BandException ex)
+            {
+                // handle a Band connection exception
+            }
         }
+
+        private async Task CreateTilePage()
+        {
+            try
+            {
+                var tiles = await bandClient.TileManager.GetTilesAsync();
+                if(tiles.Any())
+                {
+                    tileGuid = tiles.First().TileId;
+                    SendBandNotification();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            // create a new Guid for the tile
+            tileGuid = Guid.NewGuid();
+
+            // Create the small and tile icons from writable bitmaps.
+            // Small icons are 24x24 pixels.
+            WriteableBitmap smallIconBitmap = new WriteableBitmap(24, 24);
+            BandIcon smallIcon = smallIconBitmap.ToBandIcon();
+            // Tile icons are 46x46 pixels for Microsoft Band 1, and 48x48 pixels
+            // for Microsoft Band 2.
+            WriteableBitmap tileIconBitmap = new WriteableBitmap(48, 48);
+            BandIcon tileIcon = tileIconBitmap.ToBandIcon();
+
+            // create a new tile
+            BandTile tile = new BandTile(tileGuid)
+            {
+                // set the name
+                Name = "MyTile",
+                // set the icons
+                SmallIcon = smallIcon,
+                TileIcon = tileIcon
+            };
+
+            // Our layout doesn’t use Icons, but if it did, we would
+            // add our Icons to the tile by calling tile.AdditionalIcons.Add
+            // to add our (up to 8) additional BandIcons.
+
+            // Create a scrollable vertical panel that will hold 2 text messages.
+            ScrollFlowPanel panel = new ScrollFlowPanel()
+            {
+                Rect = new PageRect(0, 0, 245, 102)
+            };
+
+            // add the text block to contain the first message
+            panel.Elements.Add(
+                new WrappedTextBlock
+                {
+                    ElementId = (short)TileMessagesLayoutElementId.Message1,
+                    Rect = new PageRect(0, 0, 245, 102),
+                    // left, top, right, bottom margins
+                    Margins = new Margins(15, 0, 15, 0),
+                    Color = new BandColor(0xFF, 0xFF, 0xFF),
+                    Font = WrappedTextBlockFont.Small
+                });
+            // add the text block to contain the second message
+            panel.Elements.Add(
+                new WrappedTextBlock
+                {
+                    ElementId = (short)TileMessagesLayoutElementId.Message2,
+                    Rect = new PageRect(0, 0, 245, 102),
+                    // left, top, right, bottom margins
+                    Margins = new Margins(15, 0, 15, 0),
+                    Color = new BandColor(0xFF, 0xFF, 0xFF),
+                    Font = WrappedTextBlockFont.Small
+                });
+
+            // create the page layout
+            PageLayout layout = new PageLayout(panel);
+
+            try
+            {
+                // add the layout to the tile
+                tile.PageLayouts.Add(layout);
+            }
+            catch (BandException ex)
+            {
+                // handle an error adding the layout
+            }
+
+            // prerequisite: bandClient has successfully connected to a Band  
+            try
+            {
+                await bandClient.NotificationManager.VibrateAsync(Microsoft.Band.Notifications.VibrationType.TwoToneHigh);
+
+                // add the tile to the Band
+                if (await bandClient.TileManager.AddTileAsync(tile))
+                {
+                    // tile was successfully added
+                    // can proceed to set tile content with SetPagesAsync
+                    // create a new Guid for the messages page
+                    Guid messagesPageGuid = Guid.NewGuid();
+                    // create the object that contains the page content to be set
+                    PageData pageContent = new PageData(
+                        messagesPageGuid,
+                        // specify which layout to use for this page
+                        (int)TileLayoutIndex.MessagesLayout,
+                        new WrappedTextBlockData((Int16)TileMessagesLayoutElementId.Message1,
+                        "This is the text of the first message"), new WrappedTextBlockData(
+                    (Int16)TileMessagesLayoutElementId.Message2,
+                    "This is the text of the second message"));
+                    try
+                    {     // set the page content on the Band
+                        if (await bandClient.TileManager.SetPagesAsync(tileGuid, pageContent))
+                        {
+                            // page content successfully set on Band
+                        }
+                        else
+                        {
+                            // unable to set content to the Band
+                        }
+                    }
+                    catch (BandException ex)
+                    {
+                        // handle a Band connection exception
+                    }
+                }
+                else
+                {         // tile failed to be added, handle error
+                }
+            }
+            catch (BandException ex)
+            {     // handle a Band connection exception
+            }
+        }
+
+        // Define symbolic constants for indexes to each layout that
+        // the tile has. The index of the first layout is 0. Because only
+        // 5 layouts are allowed, the max index value is 4.
+        internal enum TileLayoutIndex
+        {
+            MessagesLayout = 0,
+        };
+
+        // Define symbolic constants to uniquely (in MessagesLayout)
+        // identify each of the elements of our layout
+        // that contain content that the app will set
+        // (that is, these Ids will be used when calling APIs
+        // to set the page content).
+        internal enum TileMessagesLayoutElementId : short
+        {
+            Message1 = 1, // Id for the 1st message text block
+            Message2 = 2, // Id for the 2nd message text block
+        };
 
         private async void RefreshData()
         {
@@ -92,6 +245,23 @@ namespace ExploringWithBand.UWP.Views
         private void OnPositionChanged(Geoposition obj)
         {
             RefreshData();
+        }
+
+        private async void SendBandNotification()
+        {
+            if (bandClient == null || tileGuid == Guid.Empty || !bandClient.TileManager.TileInstalledAndOwned(tileGuid, System.Threading.CancellationToken.None))
+            {
+                return;
+            }
+            try
+            {
+                // send a dialog to the Band for one of our tiles
+                await bandClient.NotificationManager.ShowDialogAsync(tileGuid, "Dialog title", "Dialog body");
+            }
+            catch (BandException ex)
+            {
+                // handle a Band connection exception
+            }
         }
         #endregion
 
