@@ -9,6 +9,7 @@ namespace ExploringWithBand.UWP.FourSquare
         private List<string> _categories;
         public Venue(Newtonsoft.Json.Linq.JToken v)
         {
+            Id = v["id"].ToString();
             _venueName = v["name"].ToString();
             _lat = v["location"]["lat"].ToString();
             _lon = v["location"]["lng"].ToString();
@@ -34,6 +35,7 @@ namespace ExploringWithBand.UWP.FourSquare
         {
             get { return _categories; }
         }
+        public string Id { get; set; }
         public string Category
         {
             get {

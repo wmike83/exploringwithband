@@ -33,7 +33,7 @@ namespace ExploringWithBand.UWP.Services
             // If allowed then initialize geolocator
             if(accessStatus == GeolocationAccessStatus.Allowed)
             {
-                locator = new Geolocator() { DesiredAccuracyInMeters = 5, MovementThreshold = 500 };
+                locator = new Geolocator() { DesiredAccuracyInMeters = 15, MovementThreshold = 500 };
             }
         }
 

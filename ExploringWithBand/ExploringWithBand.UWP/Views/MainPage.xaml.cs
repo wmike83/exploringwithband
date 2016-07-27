@@ -29,6 +29,7 @@ namespace ExploringWithBand.UWP.Views
         private const string CURRENT_GEOFENCE_ID = "__current";
         private Guid tileGuid = Guid.Empty;
         private IBandClient bandClient = null;
+        private List<Venue> data = null;
 
         public MainPage()
         {
@@ -41,9 +42,9 @@ namespace ExploringWithBand.UWP.Views
         {
             ConnectToBand();
 
-            //GeolocatorService.Instance.OnPositionChanged += OnPositionChanged;
+            GeolocatorService.Instance.OnPositionChanged += OnPositionChanged;
 
-            //RefreshData();
+            RefreshData();
         }
 
         private async void ConnectToBand()
@@ -89,7 +90,6 @@ namespace ExploringWithBand.UWP.Views
                 if(tiles.Any())
                 {
                     tileGuid = tiles.First().TileId;
-                    SendBandNotification();
                     return;
                 }
             }
@@ -236,7 +236,7 @@ namespace ExploringWithBand.UWP.Views
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High,
                 async () =>
                 {
-                    var data = await LoadDataAsync();
+                    data = await LoadDataAsync();
                     lstHub.ItemsSource = data;
                 });
         }
@@ -247,7 +247,7 @@ namespace ExploringWithBand.UWP.Views
             RefreshData();
         }
 
-        private async void SendBandNotification()
+        private async void SendBandNotification(string id)
         {
             if (bandClient == null || tileGuid == Guid.Empty || !bandClient.TileManager.TileInstalledAndOwned(tileGuid, System.Threading.CancellationToken.None))
             {
@@ -256,7 +256,10 @@ namespace ExploringWithBand.UWP.Views
             try
             {
                 // send a dialog to the Band for one of our tiles
-                await bandClient.NotificationManager.ShowDialogAsync(tileGuid, "Dialog title", "Dialog body");
+                var v = data.Find(d => d.Id == id);
+                if (v == null)
+                    return;
+                await bandClient.NotificationManager.ShowDialogAsync(tileGuid, v.Name, "Close by");
             }
             catch (BandException ex)
             {
@@ -281,15 +284,13 @@ namespace ExploringWithBand.UWP.Views
 
         private void CreateAllGeofences(List<Venue> venues, Geoposition currentPos)
         {
-            int i = 0;
             foreach (Venue v in venues)
             {
                 var position = new BasicGeoposition();
                 position.Latitude = Double.Parse(v.Latitude);
                 position.Longitude = Double.Parse(v.Longitude);
                 var geocircle = new Geocircle(position, 50);
-                var geofence = new Geofence("geo" + i, geocircle);
-                i++;
+                var geofence = new Geofence(v.Id, geocircle);
             }
 
             // create geofence from current position
@@ -331,7 +332,7 @@ namespace ExploringWithBand.UWP.Views
                     }
                     else if (state == GeofenceState.Entered)
                     {
-
+                        SendBandNotification(geofence.Id);
                     }
                     else if (state == GeofenceState.Exited)
                     {
